@@ -3,6 +3,7 @@ import { useMutation, gql } from "@apollo/client";
 
 import { GET_USER } from "../hooks/useAuth";
 import Layout from "../components/Layout";
+import { client } from "../lib/apolloClient";
 
 const LOG_OUT = gql`
   mutation logOut {
@@ -17,12 +18,23 @@ export default function LogOut() {
     refetchQueries: [
       { query: GET_USER }
     ],
+    awaitRefetchQueries: true,
   });
   const loggedOut = Boolean(data?.logout?.status);
 
   useEffect(() => {
-    logOut();
+    const logOutAndResetStore = async () => {
+      try {
+        await logOut();
+        await client.resetStore();
+      } catch (error) {
+        console.error("Error logging out and resetting store:", error);
+      }
+    };
+  
+    logOutAndResetStore();
   }, [logOut]);
+  
 
   return (
     <Layout>

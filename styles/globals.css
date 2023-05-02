@@ -195,3 +195,7 @@ button:active {
 .account-sign-up-message {
   margin-top: 2.5rem;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { useMutation, gql } from "@apollo/client";
-
+import Cookies from 'js-cookie';
 import { GET_USER } from "../hooks/useAuth";
+import { useCart, CartItem } from "./cart/CartContext";
+import { useAddToCart } from "../hooks/useAddToCart";
 
 const LOG_IN = gql`
   mutation logIn($login: String!, $password: String!) {
@@ -15,11 +17,33 @@ const LOG_IN = gql`
 `;
 
 export default function LogInForm() {
+  const { updateCartData, setUserLoggedIn, setCartItems } = useCart();
+  const addToCart = useAddToCart();
+  // LogInForm component
+
   const [logIn, { loading, error }] = useMutation(LOG_IN, {
     refetchQueries: [
       { query: GET_USER }
     ],
+    async onCompleted() {
+      // Merge local storage cart items with server-side cart items
+      const localCartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
+      if (localCartItems.length) {
+        await Promise.all(
+          localCartItems.map(async (item: CartItem) => {
+            await addToCart(parseInt(item.product.node.id), item.quantity);
+          })
+        );
+        // Clear local storage cart items after merging
+        localStorage.removeItem("cartItems");
+      }
+
+      // Update cart data after login
+      await updateCartData();
+    },
   });
+
+
   const errorMessage = error?.message || '';
   const isEmailValid =
     !errorMessage.includes('empty_email') &&
@@ -46,7 +70,7 @@ export default function LogInForm() {
 
   return (
     <form method="post" onSubmit={handleSubmit}>
-      <fieldset disabled={loading} aria-busy={loading}>
+      <fieldset disabled={loading}>
         <label htmlFor="log-in-email">Email</label>
         <input
           id="log-in-email"

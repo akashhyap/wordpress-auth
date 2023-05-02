@@ -6,6 +6,7 @@ const REGISTER_USER = gql`
     $email: String!
     $firstName: String!
     $lastName: String!
+    $password: String!
   ) {
     registerUser(
       input: {
@@ -13,6 +14,7 @@ const REGISTER_USER = gql`
         email: $email
         firstName: $firstName
         lastName: $lastName
+        password: $password
       }
     ) {
       user {
@@ -40,7 +42,8 @@ export default function SignUpForm() {
   if (wasSignUpSuccessful) {
     return (
       <p>
-        Thanks! Check your email – an account confirmation link has been sent to you.
+        Success
+        {/* Thanks! Check your email – an account confirmation link has been sent to you. */}
       </p>
     )
   }
@@ -70,6 +73,13 @@ export default function SignUpForm() {
           type="email"
           name="email"
           autoComplete="username"
+          required
+        />
+        <label htmlFor="sign-up-pass">Password</label>
+        <input
+          id="sign-up-pass"
+          type="password"
+          name="password"
           required
         />
         {error ? (
